@@ -1,5 +1,5 @@
 import numpy as np
-from math import pi
+from math import pi, sqrt
 from scipy.optimize import Bounds, minimize, NonlinearConstraint
 
 
@@ -95,11 +95,6 @@ def compute_gp_from_x(x0):
 
 def main():
     NUM_VAR = NUM_PROP_VAR * N
-    # Initial guess needs to be of the position/orientation vars of the propellers
-    # Orientation is specified by angles theta and alpha (in radians)
-    # From that guess we can derive the value of G_p
-    # TODO: choose a different/better initial guess
-    x0 = [0] * NUM_VAR
 
     # CONSTRAINTS
     # positions of a prop have to satisfy x^2/a^2 + y^2/b^2 + z^2/c^2 = 1
@@ -107,6 +102,32 @@ def main():
     a = 1
     b = 1
     c = 1
+
+    def generate_initial_guess():
+        x0 = []
+        # choose a randomly
+        # choose b randomly (based on the bounds set by a)
+        # choose c based on the bounds set by a and b
+        # choose theta and alpha randomly from [0, 2pi] and [0, pi]
+        for _ in range(N):
+            x_i = np.random.uniform(low=-a, high=a)
+            y_bounds = b * sqrt(1 - (x_i**2)/(a**2))
+            y_i = np.random.uniform(low=-y_bounds, high=y_bounds)
+            t = c * sqrt(1 - (x_i**2)/(a**2) - (y_i**2)/(b**2))
+            possible_zs = [-t, t]
+            z_i = np.random.choice(possible_zs) 
+
+            theta_i = np.random.uniform(low=0, high=2*pi)
+            alpha_i = np.random.uniform(low=0, high=pi)
+
+            x0.extend([x_i, y_i, z_i, theta_i, alpha_i])
+        return x0
+
+    # Initial guess needs to be of the position/orientation vars of the propellers
+    # Orientation is specified by angles theta and alpha (in radians)
+    # From that guess we can derive the value of G_p
+    x0 = generate_initial_guess()
+    print(f'x0: {x0}')
 
     def ellipsoid_vals(x):
         def ellipsoid_lhs(x, y, z):
@@ -125,6 +146,7 @@ def main():
     ub = [1] * N
     position_constraint = NonlinearConstraint(ellipsoid_vals, lb, ub) 
 
+    # TODO: try removing these bounds (since they are encompassed by the constraint)
     lower_bounds = [-a, -b, -c, 0, 0] * N
     upper_bounds = [a, b, c, 2*pi, pi] * N
     bounds = Bounds(lower_bounds, upper_bounds) 
