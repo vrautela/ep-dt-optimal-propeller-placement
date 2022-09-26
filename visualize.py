@@ -4,6 +4,9 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from optimizer import N
 
+from optimization.consts import a, b, c
+
+
 def sph2cart(r, theta, phi):
     x = r * np.cos(phi) * np.sin(theta)
     y = r * np.sin(phi) * np.sin(theta)
@@ -11,24 +14,24 @@ def sph2cart(r, theta, phi):
 
     return x, y, z
 
-def convert_array_to_cartesian(a):
+def convert_array_to_cartesian(a, r=1):
     a2 = []
     for v in a:
-        ox, oy, oz = sph2cart(1, v[3], v[4])
+        ox, oy, oz = sph2cart(r, v[3], v[4])
         a2.append([v[0], v[1], v[2], ox, oy, oz])
     
     return np.array(a2)
 
 # TODO: change main so that it reads from result.txt
 def main():
-    res = [-0.8831457 ,  0.11481743, -0.4540797 ,  5.5846884 ,  2.07172036,
-        0.85195907,  0.08302979, -0.51613984,  2.97327684,  0.17725267,
-       -0.53108261,  0.58886146,  0.60884443,  5.77356432,  1.76495369,
-        0.79889514,  0.15248755,  0.58035816,  0.60567167,  2.39875759,
-       -0.33894067, -0.87878957,  0.33284919,  0.08579198,  1.24133127,
-        0.56855128, -0.62818441, -0.52935466,  2.41784735,  2.55854404,
-       -0.15472839, -0.53301054,  0.83100325,  0.24852747,  2.75233529,
-        0.55380542,  0.68791383, -0.46824315,  5.15168833,  1.54771748]
+    res = [-0.2549695 , -0.26024959, -0.04116991,  4.55302766,  2.34250403,
+        0.26812244,  0.23423874,  0.04554912,  0.2848681 ,  0.43574213,
+        0.23814835, -0.15050066,  0.07083664,  1.97243031,  2.85296347,
+       -0.33386135,  0.14673292,  0.04089422,  4.44270847,  2.37191305,
+       -0.11049478, -0.03485805,  0.09568184,  4.95568384,  2.36066821,
+        0.14968423,  0.08287538, -0.0902829 ,  0.84890831,  2.31759077,
+       -0.090786  ,  0.31188492, -0.05822582,  3.50233179,  1.81443672,
+        0.28789819,  0.14467129, -0.05910549,  3.40934337,  2.84148023]
 
     fig = plt.figure(figsize=plt.figaspect(1))  # Square figure
     ax = fig.add_subplot(111, projection='3d')
@@ -42,13 +45,12 @@ def main():
 
     # Plot the arrows representing the directions of the motors
     pre_soa = [[res[5*i], res[5*i+1], res[5*i+2], res[5*i+3], res[5*i+4]] for i in range(8)]
-    soa = convert_array_to_cartesian(pre_soa)
+    soa = convert_array_to_cartesian(pre_soa, r=0.5)
 
     X, Y, Z, U, V, W = zip(*soa)
     ax.quiver(X, Y, Z, U, V, W)
 
     # Plot the blimp (ellipsoid with semi-axes a, b, and c)
-    a, b, c = 1, 1, 1
     # Radii corresponding to the coefficients:
     rx, ry, rz = a, b, c
 
