@@ -107,6 +107,8 @@ def objective_function(x):
     return total_residual
 
 
+# Compute the G_p matrix given a propeller configuration x0 which 
+# represents a list of (x, y, z, theta, alpha) for each propeller
 def compute_gp_from_x(x0):
     pre_G_p_transpose = []
     for i in range(N):
@@ -118,6 +120,9 @@ def compute_gp_from_x(x0):
         theta = x0[var_start+3]
         alpha = x0[var_start+4]
 
+        # compute the matrix elements of the ith row
+        #   NOTE: The matrix elements of G_p in Indoor Blimp Control (Aman, 2021) are WRONG
+        #         and they should be as computed below
         F_x = np.cos(theta) * np.sin(alpha)
         F_y = np.sin(theta) * np.sin(alpha)
         F_z = np.cos(alpha)
